@@ -1,0 +1,60 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://addons/sprite_trail/SpriteTrail.gd" type="Script" id=1]
+[ext_resource path="res://icon.png" type="Texture" id=2]
+
+[sub_resource type="GDScript" id=2]
+script/source = "extends Sprite
+
+export var speed: = 300
+
+
+func _ready():
+	$SpriteTrail.active = true
+	pass
+
+
+func _physics_process(delta: float) -> void:
+	var direction: = Vector2(
+		Input.get_action_strength(\"ui_right\") - Input.get_action_strength(\"ui_left\"),
+		Input.get_action_strength(\"ui_down\") - Input.get_action_strength(\"ui_up\")
+	)
+
+	if direction.x < 0:
+		flip_h = true
+	elif direction.x > 0:
+		flip_h = false
+
+	translate(direction * speed * delta)
+"
+
+[sub_resource type="Gradient" id=1]
+colors = PoolColorArray( 1, 1, 1, 0, 1, 1, 1, 1 )
+
+[node name="Example" type="Node"]
+
+[node name="Label" type="Label" parent="."]
+anchor_left = 0.5
+anchor_right = 0.5
+margin_left = -91.0
+margin_top = 42.8402
+margin_right = 92.0
+margin_bottom = 56.8402
+text = "Use the arrow keys to move."
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Sprite" type="Sprite" parent="."]
+position = Vector2( 552.47, 270.874 )
+texture = ExtResource( 2 )
+script = SubResource( 2 )
+
+[node name="SpriteTrail" type="Node2D" parent="Sprite"]
+show_behind_parent = true
+script = ExtResource( 1 )
+active = true
+life_time = 1.0
+fake_velocity = Vector2( 100, 0 )
+copy_period = 0.4
+gradient = SubResource( 1 )
