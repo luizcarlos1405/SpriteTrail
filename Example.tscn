@@ -1,9 +1,9 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://addons/sprite_trail/SpriteTrail.gd" type="Script" id=1]
 [ext_resource path="res://icon.png" type="Texture" id=2]
 
-[sub_resource type="GDScript" id=2]
+[sub_resource type="GDScript" id=1]
 script/source = "extends Sprite
 
 export var speed: = 300
@@ -28,9 +28,6 @@ func _physics_process(delta: float) -> void:
 	translate(direction * speed * delta)
 "
 
-[sub_resource type="Gradient" id=1]
-colors = PoolColorArray( 1, 1, 1, 0, 1, 1, 1, 1 )
-
 [node name="Example" type="Node"]
 
 [node name="Label" type="Label" parent="."]
@@ -46,15 +43,12 @@ __meta__ = {
 }
 
 [node name="Sprite" type="Sprite" parent="."]
-position = Vector2( 552.47, 270.874 )
+position = Vector2( 424.796, 249.982 )
 texture = ExtResource( 2 )
-script = SubResource( 2 )
+script = SubResource( 1 )
 
 [node name="SpriteTrail" type="Node2D" parent="Sprite"]
 show_behind_parent = true
 script = ExtResource( 1 )
 active = true
-life_time = 1.0
-fake_velocity = Vector2( 100, 0 )
-copy_period = 0.4
-gradient = SubResource( 1 )
+fake_velocity = Vector2( 200, 0 )

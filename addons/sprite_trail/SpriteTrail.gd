@@ -38,8 +38,6 @@ export (ProcessMode) var process_mode: int = ProcessMode.PROCESS setget set_proc
 var _trail_copies: = []
 var _elapsed_time: = 0.0
 
-onready var _parent: Node2D = get_parent()
-
 
 func _ready() -> void:
 	show_behind_parent = behind_parent
@@ -47,11 +45,11 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	update_trail(delta)
+	update_trail(delta, get_parent())
 
 
 func _physics_process(delta: float) -> void:
-	update_trail(delta)
+	update_trail(delta, get_parent())
 
 
 func _draw() -> void:
@@ -59,8 +57,8 @@ func _draw() -> void:
 		var copy: Dictionary = _trail_copies[i]
 		# We need to correct the direction if the scale is set to -1, see
 		# spawn_copy method.
-		var draw_translation: Vector2 = (to_local(copy.global_position) + _parent.offset) * copy.transform_scale
-		if _parent.centered:
+		var draw_translation: Vector2 = (to_local(copy.global_position) + get_parent().offset) * copy.transform_scale
+		if get_parent().centered:
 			draw_translation -= copy.texture.get_size() / 2.0
 
 		var draw_transform = Transform2D(0.0, Vector2()) \
@@ -77,6 +75,8 @@ func _draw() -> void:
 
 
 func process_copies(delta: float) -> void:
+	var empty_copies: = _trail_copies.empty()
+
 	for copy in _trail_copies:
 		copy.remaining_time -= delta
 
@@ -86,7 +86,7 @@ func process_copies(delta: float) -> void:
 
 		copy.global_position -= fake_velocity * delta
 
-	if not _trail_copies.empty():
+	if not empty_copies:
 		update()
 
 
@@ -96,8 +96,8 @@ func get_texture(sprite: Node2D) -> Texture:
 	elif sprite is AnimatedSprite:
 		return sprite.frames.get_frame(sprite.animation, sprite.frame)
 	else:
+		push_error("The SpriteTrail has to have a Sprite or an AnimatedSpriet as parent.")
 		set_active(false)
-		push_error("The SpriteTrail has to have a Sprite or an AnimatedSpriet as parent. Deactivating.")
 		return null
 
 
@@ -108,24 +108,24 @@ func calculate_copy_color(copy: Dictionary) -> Color:
 	return Color(1, 1, 1)
 
 
-func spawn_copy(delta: int) -> void:
-	var copy_texture: = get_texture(_parent)
+func spawn_copy(delta: int, parent: Node2D) -> void:
+	var copy_texture: = get_texture(parent)
 	var copy_position: Vector2
 
 	if not copy_texture:
 		return
 
-	if _parent.centered:
-		copy_position = _parent.global_position# - copy_texture.get_size() / 2.0 * sprite.scale
+	if parent.centered:
+		copy_position = parent.global_position
 	else:
-		copy_position = _parent.global_position
+		copy_position = parent.global_position
 
 	# This is needed because the draw transform's scale is set to -1 on the flip
 	# direction when the sprite is flipped
 	var transform_scale: = Vector2(1, 1)
-	if _parent.flip_h:
+	if parent.flip_h:
 		transform_scale.x = -1
-	if _parent.flip_v:
+	if parent.flip_v:
 		transform_scale.y = -1
 
 	var trail_copy: = {
@@ -137,22 +137,19 @@ func spawn_copy(delta: int) -> void:
 	_trail_copies.append(trail_copy)
 
 
-func update_trail(delta: float) -> void:
+func update_trail(delta: float, parent: Node2D) -> void:
 	if active:
 		_elapsed_time += delta
 
 	process_copies(delta)
 
 	if _elapsed_time > copy_period and active:
-		spawn_copy(delta)
+		spawn_copy(delta, parent)
 		_elapsed_time = 0.0
 
 
 func set_active(value: bool) -> void:
-	# When saving the script with ctrl-alt-S _parent is set to null somehow
-	if not _parent:
-		_parent = get_parent()
-	active = value if _parent is Sprite or _parent is AnimatedSprite else false
+	active = value
 
 
 func set_behind_parent(value: bool) -> void:
@@ -168,7 +165,7 @@ func set_process_mode(value: int) -> void:
 
 
 func _get_configuration_warning() -> String:
-	if not (_parent is Sprite or _parent is AnimatedSprite):
+	if not (get_parent() is Sprite or get_parent() is AnimatedSprite):
 		return "This node has to be a child of a Sprite or an Animated Sprite to work."
 
 	return ""
