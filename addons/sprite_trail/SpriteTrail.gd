@@ -98,7 +98,7 @@ func get_texture(sprite: Node2D) -> Texture:
 			var rect = sprite.region_rect
 			image.resize(rect.size.x, rect.size.y)
 			image.blit_rect(sprite.texture.get_data(), rect, Vector2.ZERO)
-			new_texture.create_from_image(image)
+			new_texture.create_from_image(image, sprite.texture.flags)
 			return new_texture
 		else:
 			return sprite.texture
