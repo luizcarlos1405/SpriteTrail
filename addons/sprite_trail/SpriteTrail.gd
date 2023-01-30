@@ -92,7 +92,16 @@ func process_copies(delta: float) -> void:
 
 func get_texture(sprite: Node2D) -> Texture:
 	if sprite is Sprite:
-		return sprite.texture
+		if sprite.region_enabled:
+			var new_texture = ImageTexture.new()
+			var image = sprite.texture.get_data()
+			var rect = sprite.region_rect
+			image.resize(rect.size.x, rect.size.y)
+			image.blit_rect(sprite.texture.get_data(), rect, Vector2.ZERO)
+			new_texture.create_from_image(image, sprite.texture.flags)
+			return new_texture
+		else:
+			return sprite.texture
 	elif sprite is AnimatedSprite:
 		return sprite.frames.get_frame(sprite.animation, sprite.frame)
 	else:
